@@ -1,4 +1,4 @@
-module github.com/levigross/grequests
+module github.com/ChronosMasterOfAllTime/grequests
 
 go 1.19
 
