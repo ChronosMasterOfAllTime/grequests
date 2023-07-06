@@ -433,18 +433,18 @@ func (ro RequestOptions) proxySettings(req *http.Request) (*url.URL, error) {
 // 7. Do you want to use the http.Client's cookieJar?
 // 8. Do you want to change the request timeout?
 // 9. Do you want to set a custom LocalAddr to send the request from
-func (ro RequestOptions) dontUseDefaultClient() bool {
+func (ro RequestOptions) useDefaultClient() bool {
 	switch {
-	case ro.InsecureSkipVerify:
-	case ro.DisableCompression:
-	case len(ro.Proxies) != 0:
-	case ro.TLSHandshakeTimeout != 0:
-	case ro.DialTimeout != 0:
-	case ro.DialKeepAlive != 0:
-	case len(ro.Cookies) != 0:
-	case ro.UseCookieJar:
-	case ro.RequestTimeout != 0:
-	case ro.LocalAddr != nil:
+	case ro.InsecureSkipVerify,
+		ro.DisableCompression,
+		len(ro.Proxies) != 0,
+		ro.TLSHandshakeTimeout != 0,
+		ro.DialTimeout != 0,
+		ro.DialKeepAlive != 0,
+		len(ro.Cookies) != 0,
+		ro.UseCookieJar,
+		ro.RequestTimeout != 0,
+		ro.LocalAddr != nil:
 		return false
 	}
 	return true
@@ -459,7 +459,7 @@ func BuildHTTPClient(ro RequestOptions) *http.Client {
 	}
 
 	// Does the user want to change the defaults?
-	if !ro.dontUseDefaultClient() {
+	if ro.useDefaultClient() {
 		return http.DefaultClient
 	}
 
