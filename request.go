@@ -435,17 +435,16 @@ func (ro RequestOptions) proxySettings(req *http.Request) (*url.URL, error) {
 // 9. Do you want to set a custom LocalAddr to send the request from
 func (ro RequestOptions) dontUseDefaultClient() bool {
 	switch {
-	case ro.InsecureSkipVerify == true:
-	case ro.DisableCompression == true:
+	case ro.InsecureSkipVerify:
+	case ro.DisableCompression:
 	case len(ro.Proxies) != 0:
 	case ro.TLSHandshakeTimeout != 0:
 	case ro.DialTimeout != 0:
 	case ro.DialKeepAlive != 0:
 	case len(ro.Cookies) != 0:
-	case ro.UseCookieJar != false:
+	case ro.UseCookieJar:
 	case ro.RequestTimeout != 0:
 	case ro.LocalAddr != nil:
-	default:
 		return false
 	}
 	return true
@@ -464,23 +463,32 @@ func BuildHTTPClient(ro RequestOptions) *http.Client {
 		return http.DefaultClient
 	}
 
+	reqTimeout := ro.RequestTimeout != 0
+	if !reqTimeout {
+		ro.RequestTimeout = requestTimeout
+	}
+
 	// Using the user config for tls timeout or default
 	if ro.TLSHandshakeTimeout == 0 {
-		ro.TLSHandshakeTimeout = tlsHandshakeTimeout
+		if reqTimeout {
+			ro.TLSHandshakeTimeout = ro.RequestTimeout
+		} else {
+			ro.TLSHandshakeTimeout = tlsHandshakeTimeout
+		}
 	}
 
 	// Using the user config for dial timeout or default
 	if ro.DialTimeout == 0 {
-		ro.DialTimeout = dialTimeout
+		if reqTimeout {
+			ro.DialTimeout = ro.RequestTimeout
+		} else {
+			ro.DialTimeout = dialTimeout
+		}
 	}
 
 	// Using the user config for dial keep alive or default
 	if ro.DialKeepAlive == 0 {
 		ro.DialKeepAlive = dialKeepAlive
-	}
-
-	if ro.RequestTimeout == 0 {
-		ro.RequestTimeout = requestTimeout
 	}
 
 	var cookieJar http.CookieJar
@@ -566,7 +574,7 @@ func addHTTPHeaders(ro *RequestOptions, req *http.Request) {
 		req.SetBasicAuth(ro.Auth[0], ro.Auth[1])
 	}
 
-	if ro.IsAjax == true {
+	if ro.IsAjax {
 		req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	}
 }
