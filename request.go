@@ -463,31 +463,23 @@ func BuildHTTPClient(ro RequestOptions) *http.Client {
 		return http.DefaultClient
 	}
 
-	reqTimeout := ro.RequestTimeout != 0
-	if !reqTimeout {
+	reqTimeoutNotSet := ro.RequestTimeout == 0
+	if reqTimeoutNotSet {
 		ro.RequestTimeout = requestTimeout
 	}
 
 	// Using the user config for tls timeout or default
-	if ro.TLSHandshakeTimeout == 0 {
-		if reqTimeout {
-			ro.TLSHandshakeTimeout = ro.RequestTimeout
-		} else {
-			ro.TLSHandshakeTimeout = tlsHandshakeTimeout
-		}
+	if reqTimeoutNotSet && ro.TLSHandshakeTimeout == 0 {
+		ro.TLSHandshakeTimeout = tlsHandshakeTimeout
 	}
 
 	// Using the user config for dial timeout or default
-	if ro.DialTimeout == 0 {
-		if reqTimeout {
-			ro.DialTimeout = ro.RequestTimeout
-		} else {
-			ro.DialTimeout = dialTimeout
-		}
+	if reqTimeoutNotSet && ro.DialTimeout == 0 {
+		ro.DialTimeout = dialTimeout
 	}
 
 	// Using the user config for dial keep alive or default
-	if ro.DialKeepAlive == 0 {
+	if reqTimeoutNotSet && ro.DialKeepAlive == 0 {
 		ro.DialKeepAlive = dialKeepAlive
 	}
 
