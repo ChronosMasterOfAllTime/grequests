@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/ChronosMasterOfAllTime/grequests "
+	"github.com/ChronosMasterOfAllTime/grequests"
 )
 
 func Example_basicGet() {
